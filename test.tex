@@ -1,0 +1,54 @@
+%!TEX TS-program = lualatex
+%!TEX encoding = utf8
+\documentclass[12pt]{article}
+\usepackage{sidenotes}
+\usepackage{amsthm}
+\def\statementsquare{\vrule height 8pt depth 1pt width 2pt\relax}
+\newtheoremstyle{TheoremStyle}
+   {\medskipamount}% pre
+   {\medskipamount}% post
+   {\normalfont\itshape} % body
+   {0pt} %indentation
+   {\normalfont\bfseries\statementsquare\enspace} % head
+   {{}} %punctuation default (.)
+   {1em}  % space head <-> body
+   {\thmname{{#1}}\thmnumber{ #2}{\thmnote{ (#3)}}} %desc.
+\theoremstyle{TheoremStyle}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+
+
+\usepackage[citations=true, 
+    % definitionsLists=true,
+    fencedCode=true, 
+    footnotes=true, 
+    headerAttributes=true, 
+    jekyllData=true, 
+    pipeTables=true, 
+    stripIndent=true, 
+    tightLists=true, 
+    debugExtensions,
+    hybrid=true,
+    underscores=false,
+    ]{markdown}
+\renewcommand{\markdownRendererLink}[4]{\relax\href{#2}{#1}\relax}
+\usepackage{shortcode}
+
+\def\shortcodesidenote#1\closeshortcode#2{\sidenote{#1}}
+\newcommand\shortcodetheorem[1][]{\begin{theorem}[#1]}
+\newcommand\closeshortcodetheorem{\end{theorem}}
+\begin{document}
+	
+
+\begin{markdown}
+Let's try some shortcodes: First, the Theorem shortcode:
+
+{{< theorem "Chinese Remainder Theorem" >}} The groups $\mathbb{Z}/(ab)$ and $\mathbb{Z}/(a)\times \mathbb{Z}/(b)$ are isomorphic if and only if $\gcd(a,b)=1$.
+{{< /theorem >}}
+
+Then, sidenotes{{< sidenote >}}Like this one{{< /sidenote >}}: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 
+
+\end{markdown}
+
+
+\end{document}

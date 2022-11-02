@@ -1,0 +1,66 @@
+
+\RequirePackage{markdown}
+
+\def\shortcode#1{\expandafter
+    \def\expandafter\@@@next\expandafter{\csname shortcode#1\endcsname}\@@@next}
+\def\closeshortcode#1{\expandafter  
+    \def\expandafter\@@@next\expandafter{\csname closeshortcode#1\endcsname}\@@@next}
+
+
+\begin{filecontents*}{shortcode.lua}
+local shortcode = {
+  api_version = 2,
+  grammar_version = 2,
+  finalize_grammar = function(reader)
+    -- local nonspacechar = lpeg.P(1) - lpeg.S("\t ")
+    local sp = lpeg.S(" \t")
+    local osp = sp^0 -- optional space
+    local msp = sp^1 -- mandatory space
+    local opener = lpeg.P("{{<")
+    local closer = lpeg.P(">}}")
+    local keyword = lpeg.R("AZ","az") * lpeg.R("AZ","az","09")^0
+    local endkeyword = lpeg.P("/") * keyword
+    local nonblank = lpeg.P(1) - (sp+lpeg.P(">")) -- space or > terminates values.
+    local value = nonblank^1
+    -- quoted string
+    local quot = lpeg.P('"') 
+    local esc = lpeg.P("\\")
+    local simple_char = (lpeg.P(1) - (quot+esc))
+    local unesc = esc * lpeg.C(esc+quot) / "%1"
+    local noesc = esc * simple_char
+    local oquot = quot --/ "{"
+    local cquot = quot --/ "}"
+    local qstring = oquot * (simple_char+noesc+unesc)^0 * cquot
+    local equal= (osp*lpeg.P("=")*osp)
+    local keyval= (keyword * equal * qstring) + (keyword *equal *keyword) + qstring + keyword
+    local function optionals(t)
+        if not next(t) then
+            return ""
+        end
+        return "["..table.concat(t, ", ").."]"
+    end
+    
+    local open_shortcode = (opener * osp * (lpeg.C(keyword) / "\\shortcode{%0}") *
+                            ( lpeg.Ct( (msp*lpeg.C(keyval))^0 ) / optionals) *
+                            osp * closer)
+     local close_shortcode = opener * osp * lpeg.P("/") * 
+                             (lpeg.C(keyword) / "\\closeshortcode{%0}")  * 
+                             osp * closer
+     local shortcodes = lpeg.Ct(open_shortcode+close_shortcode) 
+    
+             
+     local read_shortcode = shortcodes / function(s) return { s } end
+
+    reader.insert_pattern("Inline after Endline", read_shortcode,
+                          "HugoShortcode")
+    reader.add_special_character("{")
+  end
+}
+
+return shortcode
+\end{filecontents*}
+
+
+\markdownSetup{extension={shortcode.lua}}
+
+\endinput
