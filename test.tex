@@ -3,6 +3,7 @@
 \documentclass[12pt]{article}
 \usepackage{sidenotes}
 \usepackage{amsthm}
+\usepackage[]{fontawesome5}
 \def\statementsquare{\vrule height 8pt depth 1pt width 2pt\relax}
 \newtheoremstyle{TheoremStyle}
    {\medskipamount}% pre
@@ -27,26 +28,95 @@
     pipeTables=true, 
     stripIndent=true, 
     tightLists=true, 
-    debugExtensions,
+    % debugExtensions,
     hybrid=true,
     underscores=false,
     ]{markdown}
 \renewcommand{\markdownRendererLink}[4]{\relax\href{#2}{#1}\relax}
 \usepackage{shortcode}
 
+
+%% Example 1: how to define sidenotes
 \def\shortcodesidenote#1\closeshortcode#2{\sidenote{#1}}
-\newcommand\shortcodetheorem[1][]{\begin{theorem}[#1]}
+
+%% Example 2: how to deal with named arguments
+\RequirePackage{pgfkeys}
+\makeatletter
+\def\auxshortcodemaybeunquote#1\pgfeov{\@ifnextchar"%
+    {\auxshortcodemaybeunquoteQuote}%
+    {\auxshortcodemaybeunquoteNotQuote}#1\pgfeov}
+\def\auxshortcodemaybeunquoteQuote"#1"#2\pgfeov{\edef\optionalStatementName{#1}}
+\def\auxshortcodemaybeunquoteNotQuote#1\pgfeov{\edef\optionalStatementName{#1}}
+\pgfkeyslet{/theorem/name/.@cmd}{\auxshortcodemaybeunquote}
+\pgfkeys{% this bit actually deals with an unnamed quoted string
+    /theorem/.is family, /theorem/.cd,
+    /handlers/first char syntax=true,
+    /handlers/first char syntax/the character "/.initial=\auxshortcodeinitialquote,
+}
+\def\auxshortcodeinitialquote#1{\auxshortcodemaybeunquoteQuote#1\pgfeov}
+
+\makeatother
+
+%% Environment shortcode
+\newcommand\shortcodetheorem[1][]{%
+    \pgfkeys{/theorem,#1}% see above
+    \begin{theorem}[\optionalStatementName]}
 \newcommand\closeshortcodetheorem{\end{theorem}}
+
+
+% simplest shortcode
+\newcommand\shortcodehr{\par\medskip\hrule\par\medskip}
+
+% shortcode with one argument, no processing
+\newcommand\shortcodeicon[1][]{\faIcon{#1}}
+
+% shortcode with named arguments: faicon name="<iconname>" style="style"
+
+\pgfkeys{/faicon/.is family, /faicon/.cd, 
+    name/.initial={},
+    name/.estore in=\shtcIconName,
+    style/.estore in=\shtcIconStyle,
+    style/.default=solid,
+    name, style
+}
+\newcommand\shortcodefaicon[1][]{\pgfkeys{/faicon/.cd,#1}\faIcon[\shtcIconStyle]{\shtcIconName}}
+
+
+\RequirePackage{alertmessage}
+\def\shortcodealert[#1]#2\closeshortcode#3{\expandafter\csname alert#1\endcsname{#2}}
+
 \begin{document}
 	
 
 \begin{markdown}
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 
+    
+{{< hr >}}
+    
+    
+Lorem ipsum dolor sit amet {{< icon github >}}, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua{{< faicon name=building  >}}{{<faicon name =building style=   regular>}}.
+    
 Let's try some shortcodes: First, the Theorem shortcode:
 
-{{< theorem "Chinese Remainder Theorem" >}} The groups $\mathbb{Z}/(ab)$ and $\mathbb{Z}/(a)\times \mathbb{Z}/(b)$ are isomorphic if and only if $\gcd(a,b)=1$.
+{{< theorem name="Chinese Remainder Theorem" >}}The groups $\mathbb{Z}/(ab)$ and $\mathbb{Z}/(a)\times \mathbb{Z}/(b)$ are isomorphic if and only if $\gcd(a,b)=1$.
 {{< /theorem >}}
 
 Then, sidenotes{{< sidenote >}}Like this one{{< /sidenote >}}: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 
+
+{{< theorem "Chinese Remainder Theorem" >}}The groups $\mathbb{Z}/(ab)$ and $\mathbb{Z}/(a)\times \mathbb{Z}/(b)$ are isomorphic if and only if $\gcd(a,b)=1$.
+{{< /theorem >}}
+
+
+{{<alert info >}}
+This information is important.
+{{< /alert >}}
+{{<alert error >}}
+But this is a terrible mistake.
+{{< /alert >}}
+
+
+
+
 
 \end{markdown}
 
