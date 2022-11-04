@@ -1,31 +1,52 @@
 # Hugo shortcodes in LaTeX's Lua Markdown
 
-Lualatex has a Markdown parser package (called, you might have never guessed, `markdown`). So you can write Markdown, and have it beautifully rendered by LaTeX. Hugo is a static site builder. It works on Markdown files (among others) but it extends the Markdown syntax using shortcodes.
-
-Shortcodes have this aspect: `{{< shortcodename param1 param2 ... >}}`, which is transformed by Hugo to some HTML. 
-
-For a more concrete example, suppose you define a `theorem` shortcode in this way: 
-
-```html
-<p><strong>Theorem {{ with .Get "name" }} ({{ . }}){{ end }}</strong>
-    <em>{{ .Inner | markdownify }}</em></p>
-
-```
-
-Then you can use this shortcode like so:
-
-```markdown
-{{< theorem name="Chinese Remainder Theorem" >}} The groups $\mathbb{Z}/(ab)$ and $\mathbb{Z}/(a)\times \mathbb{Z}/(b)$ are isomorphic if and only if $\gcd(a,b)=1$.
-{{< /theorem >}}
-```
-
-But if you use shortcodes, you cannot use the Markdown file as a LaTeX's `markdown`  input, since shortcodes aren't processed by `markdown`. Well, not anymore.
-
----
-
-This package implements an extension to LaTeX's Lua Markdown parser (caveat: by someone who has never programmed in Lua) to process shortcodes. Mind you: this package defines the shortcode extension, but you still need to provide the corresponding LaTex definition for each shortcode. 
+This package implements an extension to LaTeX's Lua Markdown parser (caveat: by someone who has never programmed in Lua) to process Hugo shortcodes. We define the `shortcode.lua` markdown  extension, but you still need to provide the corresponding LaTex definition for each shortcode. 
 
 Let me state it again: You need to `\usepackage{shortcode}`, and then **you need to define your own macros for each shortcode**.  
+
+See test.tex for examples on how to define shortcodes or read on for an explanation.
+
+## How it works
+
+The idea behind this package is to code a markdown extension so that shortcodes
+
+```
+{{< shortcodename key1=value1 key2=value2 ... >}}
+```
+
+gets translated into LaTeX as
+
+```latex
+\shortcode{shortcodename}[key1=value1,key2=value2,...]
+```
+
+This command actually invokes the following command, which you have to define:
+
+```
+\shortcodeshortcodename[key1=value1,key2=value2,...]
+```
+
+
+
+Likewise,
+
+```
+{{< /shortcodename >}}
+```
+
+gets translated to 
+
+```latex
+\closeshortcode{shortcodename}
+```
+
+which in turn calls
+
+```latex
+\closeshortcodeshortcodename
+```
+
+which, again, you have to define.
 
 Let's see a few examples.
 
@@ -251,5 +272,4 @@ The tricky part is
 ```
 
 We then have to define a macro `\auxshortcodemaybeunquote` that checks if the following character is a quote, to cover both use cases: `{{<theorem name="Lagrange" >}}` and `{{<theorem name=Lagrange >}}`.
-
 

@@ -5,3 +5,4 @@ test.debug-extensions.json
 test.log
 test.markdown.in
 test.synctex.gz
+.DS_Store
