@@ -1,10 +1,63 @@
 
 \RequirePackage{markdown}
+\RequirePackage{pgfkeys}
 
 \def\shortcode#1{\expandafter
     \def\expandafter\@@@next\expandafter{\csname shortcode#1\endcsname}\@@@next}
 \def\closeshortcode#1{\expandafter  
     \def\expandafter\@@@next\expandafter{\csname closeshortcode#1\endcsname}\@@@next}
+    
+    
+%% As per https://tex.stackexchange.com/questions/664143/how-to-remove-optional-quotes-from-argument-to-pgfkeys/664146#664146
+
+\def\remove@quotes@eov"#1"\myeov#2{\def#2{#1}}
+\def\remove@eov#1\myeov#2{\def#2{#1}}
+\def\maybe@remove@quotes{\@ifnextchar"%
+    \remove@quotes@eov\remove@eov}
+
+\pgfkeys{/handlers/.unquote and store in/.code=%
+    {\pgfkeysalso{\pgfkeyscurrentpath/.code={\maybe@remove@quotes##1\myeov#1}}}%
+}%
+\def\removequotes"#1"{#1}
+\def\optionalunquote#1{\@ifnextchar"\removequotes\relax}
+\def\unquoteandstore#1#2{\maybe@remove@quotes#2\myeov#1}
+
+
+\newcommand\DeclareShortcode[2]{%
+    \expandafter\newcommand\csname shortcode#1\endcsname[1][]{%
+        \pgfkeys{/shortcode/#1/.cd,##1}#2}}
+        
+\newcommand\DeclareShortcodeOption[3]{%
+    \pgfkeys{/shortcode/#1/.cd, 
+        #2/.unquote and store in=#3}}
+        
+\newcommand\DeclareShortcodeOptionDefault[4]{%
+    \pgfkeys{/shortcode/#1/.cd, 
+        #2/.unquote and store in=#3,
+        #2/.default=#4,
+        #2}}
+        
+% \DeclareShortcodeEnv{abstract}{\begin{abstract}}{\end{abstract}}
+
+\newcommand\DeclareShortcodePair[3]{%
+    \expandafter\newcommand\csname shortcode#1\endcsname[1][]{%
+        \pgfkeys{/shortcode/#1/.cd,##1}#2}%
+    \expandafter\newcommand\csname closeshortcode#1\endcsname{#3}}
+
+% \DeclareShortcodePairCommand{alert}{\emph}
+\newcommand\DeclareShortcodePairCommand[2]{%
+    \expandafter\def\csname shortcode#1\endcsname##1\closeshortcode##2{%
+        \expandafter#2\expandafter{\ShortcodeFindOptions{#1}##1}}}
+
+\newcommand\ShortcodeFindOptions[1]{%
+    \def\@@shtemp{\ShortcodeGetOptions{#1}}%
+    \@ifnextchar[\@@shtemp\relax}
+\def\ShortcodeGetOptions#1[#2]{\pgfkeys{/shortcode/#1/.cd,#2}}    
+    
+
+
+
+
 
 
 \begin{filecontents*}{shortcode.lua}
@@ -59,7 +112,6 @@ local shortcode = {
 
 return shortcode
 \end{filecontents*}
-
 
 \markdownSetup{extension={shortcode.lua}}
 

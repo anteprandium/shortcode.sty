@@ -3,7 +3,9 @@
 \documentclass[12pt]{article}
 \usepackage{sidenotes}
 \usepackage{amsthm}
-\usepackage[]{fontawesome5}
+\usepackage{fontawesome5}
+\usepackage{hyperref}
+
 \def\statementsquare{\vrule height 8pt depth 1pt width 2pt\relax}
 \newtheoremstyle{TheoremStyle}
    {\medskipamount}% pre
@@ -28,58 +30,41 @@
     pipeTables=true, 
     stripIndent=true, 
     tightLists=true, 
-    % debugExtensions,
     hybrid=true,
     underscores=false,
     ]{markdown}
 \renewcommand{\markdownRendererLink}[4]{\relax\href{#2}{#1}\relax}
+
 \usepackage{shortcode}
 
 
-%% Example 1: how to define sidenotes
-\def\shortcodesidenote#1\closeshortcode#2{\sidenote{#1}}
-
-%% Example 2: how to deal with named arguments
-\RequirePackage{pgfkeys}
-\makeatletter
-\def\auxshortcodemaybeunquote#1\pgfeov{\@ifnextchar"%
-    {\auxshortcodemaybeunquoteQuote}%
-    {\auxshortcodemaybeunquoteNotQuote}#1\pgfeov}
-\def\auxshortcodemaybeunquoteQuote"#1"#2\pgfeov{\edef\optionalStatementName{#1}}
-\def\auxshortcodemaybeunquoteNotQuote#1\pgfeov{\edef\optionalStatementName{#1}}
-\pgfkeyslet{/theorem/name/.@cmd}{\auxshortcodemaybeunquote}
-\pgfkeys{% this bit actually deals with an unnamed quoted string
-    /theorem/.is family, /theorem/.cd,
-    /handlers/first char syntax=true,
-    /handlers/first char syntax/the character "/.initial=\auxshortcodeinitialquote,
-}
-\def\auxshortcodeinitialquote#1{\auxshortcodemaybeunquoteQuote#1\pgfeov}
-
-\makeatother
-
-%% Environment shortcode
-\newcommand\shortcodetheorem[1][]{%
-    \pgfkeys{/theorem,#1}% see above
-    \begin{theorem}[\optionalStatementName]}
-\newcommand\closeshortcodetheorem{\end{theorem}}
 
 
 % simplest shortcode
 \newcommand\shortcodehr{\par\medskip\hrule\par\medskip}
+% equivalently:
+% \DeclareShortcode{hr}{\par\medskip\hrule\par\medskip}
 
 % shortcode with one argument, no processing
-\newcommand\shortcodeicon[1][]{\faIcon{#1}}
+\newcommand\shortcodeicon[1]{\faIcon{#1}}
 
-% shortcode with named arguments: faicon name="<iconname>" style="style"
+% shortcode with named arguments: faicon name="iconname" style="iconstyle(defaults to solid)"
+\DeclareShortcodeOption{faicon}{name}{\faiconName}
+\DeclareShortcodeOptionDefault{faicon}{style}{\faiconStyle}{solid}
+\DeclareShortcode{faicon}{\faIcon[\faiconStyle]{\faiconName}}
 
-\pgfkeys{/faicon/.is family, /faicon/.cd, 
-    name/.initial={},
-    name/.estore in=\shtcIconName,
-    style/.estore in=\shtcIconStyle,
-    style/.default=solid,
-    name, style
+%% Example
+\DeclareShortcodePairCommand{sidenote}{\sidenote}
+
+%% Example
+\pgfkeys{
+    /handlers/first char syntax=true,
+    /handlers/first char syntax/the character "/.initial=\unquoteandstore\optionalStatementName,
 }
-\newcommand\shortcodefaicon[1][]{\pgfkeys{/faicon/.cd,#1}\faIcon[\shtcIconStyle]{\shtcIconName}}
+
+\DeclareShortcodePair{theorem}{\begin{theorem}[\optionalStatementName]}
+                                {\end{theorem}}
+\DeclareShortcodeOption{theorem}{name}{\optionalStatementName}
 
 
 \RequirePackage{alertmessage}
@@ -110,15 +95,19 @@ Then, sidenotes{{< sidenote >}}Like this one{{< /sidenote >}}: Lorem ipsum dolor
 {{<alert info >}}
 This information is important.
 {{< /alert >}}
+
+
 {{<alert error >}}
 But this is a terrible mistake.
 {{< /alert >}}
 
 
 
-
-
 \end{markdown}
+
+    
+
+\markdownInput{README.md}
 
 
 \end{document}
