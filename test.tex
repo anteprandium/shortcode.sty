@@ -46,7 +46,7 @@
 % \DeclareShortcode{hr}{\par\medskip\hrule\par\medskip}
 
 % shortcode with one argument, no processing
-\newcommand\shortcodeicon[1]{\faIcon{#1}}
+\newcommand\shortcodeicon[1][]{\faIcon{#1}}
 
 % shortcode with named arguments: faicon name="iconname" style="iconstyle(defaults to solid)"
 \DeclareShortcodeOption{faicon}{name}{\faiconName}
@@ -74,23 +74,30 @@
 	
 
 \begin{markdown}
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 
     
+# Examples
+    
+    
+Simple shortcode, no arguments, one command
 {{< hr >}}
     
     
-Lorem ipsum dolor sit amet {{< icon github >}}, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua{{< faicon name=building  >}}{{<faicon name =building style=   regular>}}.
+Simple shortcode with one positional argument {{< icon github >}}, and shortcodes with keyvalues {{< faicon name=building  >}}{{<faicon name =building style=   regular>}}.
     
-Let's try some shortcodes: First, the Theorem shortcode:
+Pair shortcodes: the theorem environment.
 
 {{< theorem name="Chinese Remainder Theorem" >}}The groups $\mathbb{Z}/(ab)$ and $\mathbb{Z}/(a)\times \mathbb{Z}/(b)$ are isomorphic if and only if $\gcd(a,b)=1$.
 {{< /theorem >}}
 
-Then, sidenotes{{< sidenote >}}Like this one{{< /sidenote >}}: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 
+Shortcodes that transform its content to arguments, for intance sidenotes{{< sidenote >}}Like this one{{< /sidenote >}}. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 
+
+Default handling of unnamed and quoted strings:
 
 {{< theorem "Chinese Remainder Theorem" >}}The groups $\mathbb{Z}/(ab)$ and $\mathbb{Z}/(a)\times \mathbb{Z}/(b)$ are isomorphic if and only if $\gcd(a,b)=1$.
 {{< /theorem >}}
 
+
+More complex transformations: positional arguments and transform to command argument.
 
 {{<alert info >}}
 This information is important.

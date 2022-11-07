@@ -116,7 +116,7 @@ This would be easy to define:
 ```latex
 % shortcode with one argument, no processing. 
 \RequirePackage{fontawesome5}
-\newcommand\shortcodeicon[1]{\faIcon{#1}}
+\newcommand\shortcodeicon[1][]{\faIcon{#1}}
 ```
 
 
